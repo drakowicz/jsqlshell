@@ -28,7 +28,7 @@ public class DbConfig {
             if (new File(userHomeProperties).exists()) {
                 dbProperties.load(new FileInputStream(userHomeProperties));
             } else {
-                dbProperties.load(getClass().getClassLoader().getResourceAsStream(DB_PROPERTIES+"xxx"));
+                dbProperties.load(getClass().getClassLoader().getResourceAsStream(DB_PROPERTIES));
             }
         } catch (Exception e) {
             throw new RuntimeException("Reading property file '" + userHomeProperties +

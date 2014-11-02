@@ -36,23 +36,26 @@ public class CommandHelper {
             }
             return true;
         
-        } else if (command.startsWith("set ")) {
-            if (command.startsWith("set autocommit ")) {
-                connection.setAutoCommit("true".equals(command.replaceAll("set autocommit ", "").toLowerCase().trim()));
+        } else if ("-set".equals(command)) {
+            out.println("info: autocommit=" + connection.getAutoCommit());
+            out.println("info: readonly=" + connection.isReadOnly());
+            out.println("info: maxrows=" + statement.getMaxRows());
+            out.println("info: timeout=" + ((statement.getQueryTimeout() == 0) ? "nolimit" : String.valueOf(statement.getQueryTimeout())));
+            return true;
+        } else if (command.startsWith("-set ")) {
+            if (command.startsWith("-set autocommit ")) {
+                connection.setAutoCommit("true".equals(command.replaceAll("-set autocommit ", "").toLowerCase().trim()));
                 out.println("info: autocommit=" + connection.getAutoCommit());
-            }
-            if (command.startsWith("set readonly ")) {
-                connection.setReadOnly("true".equals(command.replaceAll("set readonly ", "").toLowerCase().trim()));
+            } else if (command.startsWith("-set readonly ")) {
+                connection.setReadOnly("true".equals(command.replaceAll("-set readonly ", "").toLowerCase().trim()));
                 out.println("info: readonly=" + connection.isReadOnly());
-            }
-            if (command.startsWith("set maxrows ")) {
+            } else if (command.startsWith("-set maxrows ")) {
                 try {
                     statement.setMaxRows(new Integer(command.replaceAll("\\D", "")));
                 } catch (NumberFormatException ignore) {
                 }
                 out.println("info: maxrows=" + statement.getMaxRows());
-            }
-            if (command.startsWith("set timeout ")) {
+            } else if (command.startsWith("-set timeout ")) {
                 try {
                     statement.setQueryTimeout(new Integer(command.replaceAll("\\D", "")));
                 } catch (NumberFormatException ignore) {
@@ -61,7 +64,7 @@ public class CommandHelper {
             }
             return true;
         
-        } else if (command.startsWith("show ")) {
+        } else if (command.startsWith("-show ")) {
             if (command.endsWith("schemas")) {
                 ResultSet catalogs = connection.getMetaData().getCatalogs();
                 new DataFormatter(catalogs).format().printResults(out, started);
@@ -72,7 +75,7 @@ public class CommandHelper {
                 ResultSet tables = connection.getMetaData().getColumns(null, null, "%", "%");
                 new DataFormatter(tables).filter(TABLES_SET).unique().format().printResults(out, started);
             } else {
-                String[] names = command.substring("show ".length()).trim().split("\\.");
+                String[] names = command.substring("-show ".length()).trim().split("\\.");
                 ResultSet tables = null;
                 if (names.length == 1) {
                     tables = connection.getMetaData().getColumns(null, null, names[0], "%");
@@ -100,14 +103,15 @@ public class CommandHelper {
     private static void printHelp(PrintStream out) {
         out.println("     exit - to quit JSQLShell");
         out.println("     help - to see this help");
-        out.println("     history - show last 100 statements");
-        out.println("     set autocommit [true|false] - to enable/disable autocommit (default=false)");
-        out.println("     set readonly [true|false] - to enable/disable this session to be read only (default=true)");
-        out.println("     set maxrows [number] - to set max of rows return by the result set (default=1000)");
-        out.println("     set timeout [millies] - to set query timeout (default=0 - nolimit)");
-        out.println("     show schemas - show available schemas");
-        out.println("     show tables - show all tables");
-        out.println("     show [table_name || schema.table_name || catalog.shema.table_name] - show table definition, wildcards accepted");
+        out.println("     history - shows last 100 statements");
+        out.println("     -set - show all current settings");
+        out.println("     -set autocommit [true|false] - to enable/disable autocommit (default=false)");
+        out.println("     -set readonly [true|false] - to enable/disable this session to be read only (default=true)");
+        out.println("     -set maxrows [number] - to set max of rows return by the result set (default=1000)");
+        out.println("     -set timeout [millies] - to set query timeout (default=0 - nolimit)");
+        out.println("     -show schemas - show available schemas");
+        out.println("     -show tables - show all tables");
+        out.println("     -show [table_name || schema.table_name || catalog.shema.table_name] - show table definition, wildcards accepted");
     }
 
     private static Set<String> getTableDefColumns(boolean schema) {

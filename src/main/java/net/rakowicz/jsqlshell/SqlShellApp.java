@@ -27,7 +27,7 @@ public class SqlShellApp {
             out.println("Type 'help' for more options");
 
             while (true) {
-                String command = CommandReader.readLine("sql> ");
+                String command = CommandReader.readLine("jss> ");
 
                 try {
                     if (connection.isClosed()) {
