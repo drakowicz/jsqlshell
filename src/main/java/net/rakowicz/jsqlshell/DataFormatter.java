@@ -3,7 +3,6 @@ package net.rakowicz.jsqlshell;
 import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,15 +17,15 @@ public class DataFormatter {
     private ResultSetMetaData metaData;
     private List<List<String>> results;
     private List<String> columnNames;
-    private List<Integer> columnLenghts;
-    private Set<String> showColumns = Collections.EMPTY_SET;
+    private List<Integer> columnLengths;
+    private Set<String> showColumns = Collections.emptySet();
     private boolean unique;
 
     public DataFormatter(ResultSet rset) throws Exception {
         this.rset = rset;
         this.metaData = rset.getMetaData();
-        columnLenghts = new ArrayList<Integer>(metaData.getColumnCount());
-        columnNames = new ArrayList<String>(columnLenghts.size());
+        columnLengths = new ArrayList<Integer>(metaData.getColumnCount());
+        columnNames = new ArrayList<String>(columnLengths.size());
         results = new ArrayList<List<String>>();
     }
     
@@ -34,16 +33,16 @@ public class DataFormatter {
         for (int i = 0; i < metaData.getColumnCount(); i++) {
             String colName = metaData.getColumnName(i+1);
             columnNames.add(colName);
-            columnLenghts.add(colName.length());
+            columnLengths.add(colName.length());
         }
-        while(rset.next()) {
+        while (rset.next()) {
             List<String> rowData = new ArrayList<String>();
             results.add(rowData);
-            for (int i = 0; i < columnLenghts.size(); i++) {
-                Integer colLen = columnLenghts.get(i);
+            for (int i = 0; i < columnLengths.size(); i++) {
+                Integer colLen = columnLengths.get(i);
                 String value = rset.getString(i+1); // TODO handle LOB in SQL Server
                 Integer valLen = value == null ? 0 : value.length();
-                columnLenghts.set(i, Math.max(colLen, valLen));
+                columnLengths.set(i, Math.max(colLen, valLen));
                 rowData.add(value == null ? "NULL" : value);
             }
         }
@@ -61,18 +60,24 @@ public class DataFormatter {
     }
     
     public DataFormatter printResults(PrintStream out, long started) throws Exception {
-        int numOfCols = columnLenghts.size();
+        out.println();
+        printBoundary(out);
+        
+        int numOfCols = columnLengths.size();
         int col = 0;
-        while(col < numOfCols) {
+        while (col < numOfCols) {
             String name = columnNames.get(col);
             if (showColumns.isEmpty() || showColumns.contains(name)) {
                 out.print("| ");
-                out.print(padRight(name, columnLenghts.get(col)));
+                out.print(padRight(name, columnLengths.get(col)));
                 out.print(" ");
             }
             col++;
         }
         out.println("|");
+        
+        printBoundary(out);
+        
         Set<String> uniqueSet = new HashSet<String>(); 
         outer: for (List<String> rowData : results) {
             col = 0;
@@ -83,7 +88,7 @@ public class DataFormatter {
                         continue outer;
                     }
                     out.print("| ");
-                    out.print(padRight(value, columnLenghts.get(col)));
+                    out.print(padRight(value, columnLengths.get(col)));
                     out.print(" ");
                     if (unique) {
                         break;
@@ -93,10 +98,27 @@ public class DataFormatter {
             }
             out.println("|");
         }
+        
+        printBoundary(out);
+        out.println();
+        
         long time = System.currentTimeMillis() - started;
         int size = unique ? uniqueSet.size() : results.size();
         out.println(size + " rows in set (" + time + " ms)");
         return this;
+    }
+    
+    private void printBoundary(PrintStream out) {
+        int numOfCols = columnLengths.size();
+        for (int col = 0; col < numOfCols; col++) {
+            out.print("--");
+            for (int x = 0; x < columnLengths.get(col); x++) {
+                out.print("-");
+            }
+            out.print("-");
+        }
+        
+        out.println("-");
     }
     
     private String padRight(String value, int len) {
@@ -105,7 +127,7 @@ public class DataFormatter {
         }
         int needed = (len - value.length()) / SPACES.length();
         StringBuilder pad = new StringBuilder(SPACES);
-        while(needed-- > 0) {
+        while (needed-- > 0) {
             pad.append(SPACES);
         }
         
