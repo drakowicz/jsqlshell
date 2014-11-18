@@ -100,11 +100,11 @@ public class DataFormatter {
         }
         
         printBoundary(out);
-        out.println();
         
         long time = System.currentTimeMillis() - started;
         int size = unique ? uniqueSet.size() : results.size();
         out.println(size + " rows in set (" + time + " ms)");
+        out.println();
         return this;
     }
     
