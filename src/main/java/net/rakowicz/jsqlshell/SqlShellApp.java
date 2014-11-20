@@ -44,8 +44,12 @@ public class SqlShellApp {
 
                     String sql = command;
                     if (!sql.trim().toLowerCase().startsWith("select ")) {
+                        int maxRows = statement.getMaxRows();
+                        statement.setMaxRows(0);
+                        
                         int changed = statement.executeUpdate(sql);
                         out.println("info: affected " + changed + " rows");
+                        statement.setMaxRows(maxRows);
                     } else {
                         long started = System.currentTimeMillis();
                         ResultSet rset = statement.executeQuery(sql);
