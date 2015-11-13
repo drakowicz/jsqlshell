@@ -69,7 +69,7 @@ public class DbConfig {
         Connection connection = DriverManager.getConnection(
                 getProperty(DB_URL),
                 getProperty(DB_USER),
-                getProperty(DB_USER));
+                getProperty(DB_PASS));
         connection.setAutoCommit("true".equalsIgnoreCase(getProperty(DB_AUTO_COMMIT)));
         connection.setReadOnly("true".equalsIgnoreCase(getProperty(DB_READ_ONLY)));
         return connection;
