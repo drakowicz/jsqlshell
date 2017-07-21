@@ -26,7 +26,9 @@ public class CommandHelper {
     public static boolean isCommand(String command, PrintStream out, Connection connection, Statement statement) throws Exception {
         
         long started = System.currentTimeMillis();
-        if ("help".equals(command)) {
+        if (command == null) {
+            return false;
+        } else if ("help".equals(command)) {
             printHelp(out);
             return true;
         

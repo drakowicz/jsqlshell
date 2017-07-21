@@ -43,7 +43,9 @@ public class SqlShellApp {
                     }
 
                     String sql = command;
-                    if (!sql.trim().toLowerCase().startsWith("select ")) {
+                    if (sql == null) {
+                        throw new RuntimeException("exit");
+                    } else if (!sql.trim().toLowerCase().startsWith("select ")) {
                         int maxRows = statement.getMaxRows();
                         statement.setMaxRows(0);
                         
